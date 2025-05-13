@@ -94,9 +94,20 @@ sysctl --system
 
 # Install CRI-Docker
 echo -e "${YELLOW}Installing CRI-Docker...${NC}"
+
 VER=$(curl -s https://api.github.com/repos/Mirantis/cri-dockerd/releases/latest | grep tag_name | cut -d '"' -f 4 | sed 's/v//g')
-wget -q https://github.com/Mirantis/cri-dockerd/releases/download/v${VER}/cri-dockerd-${VER}.amd64.tgz
-tar xvf cri-dockerd-${VER}.amd64.tgz
+ARCH=$(uname -m)
+if [ "$ARCH" = "x86_64" ]; then
+  wget -q https://github.com/Mirantis/cri-dockerd/releases/download/v${VER}/cri-dockerd-${VER}.amd64.tgz
+  tar xvf cri-dockerd-${VER}.amd64.tgz
+elif [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ]; then
+  wget -q https://github.com/Mirantis/cri-dockerd/releases/download/v${VER}/cri-dockerd-${VER}.arm64.tgz
+  tar xvf cri-dockerd-${VER}.arm64.tgz
+else
+  echo "Unsupported architecture: $ARCH"
+  exit 1
+fi
+
 mv cri-dockerd/cri-dockerd /usr/local/bin/
 rm -rf cri-dockerd-${VER}.amd64.tgz cri-dockerd
 
